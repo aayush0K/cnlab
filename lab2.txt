@@ -1,6 +1,8 @@
 set ns [new Simulator]
+
 set nf [open lab2.nam w]
 $ns namtrace-all $nf
+
 set tf [open lab2.tr w]
 $ns trace-all $tf
 
@@ -17,22 +19,18 @@ $ns duplex-link $n2 $n4 2000Mb 1ms DropTail
 $ns duplex-link $n3 $n4 200Mb 1ms DropTail
 $ns duplex-link $n4 $n5 1Mb 1ms DropTail
 
-$ns queue-limit $n0 $n4 5
-$ns queue-limit $n2 $n4 3
-$ns queue-limit $n4 $n5 2
-
 set p1 [new Agent/Ping]
 $ns attach-agent $n0 $p1
-$p1 set packetSize_ 50000
-$p1 set interval_ 0.0001
+$p1 set packetSize 50000
+$p1 set interval 0.0001
 
 set p2 [new Agent/Ping]
 $ns attach-agent $n1 $p2
 
 set p3 [new Agent/Ping]
 $ns attach-agent $n2 $p3
-$p3 set packetSize_ 30000
-$p3 set interval_ 0.00001
+$p3 set packetSize 30000
+$p3 set interval 0.00001
 
 set p4 [new Agent/Ping]
 $ns attach-agent $n3 $p4
@@ -40,9 +38,13 @@ $ns attach-agent $n3 $p4
 set p5 [new Agent/Ping]
 $ns attach-agent $n5 $p5
 
+$ns queue-limit $n0 $n4 5
+$ns queue-limit $n2 $n4 3
+$ns queue-limit $n4 $n5 2
+
 Agent/Ping instproc recv {from rtt} {
-    $self instvar node_
-    puts "node [$node_ id] received answer from $from with round trip time $rtt msec"
+    $self instvar node
+    puts "Node [$node id] received answer from $from with RTT = $rtt ms"
 }
 
 $ns connect $p1 $p5
@@ -64,38 +66,5 @@ for {set i 1} {$i <= 10} {incr i} {
 }
 
 $ns at 2.0 "finish"
+
 $ns run
-
-awk:
-BEGIN {
-    drop = 0
-    rec  = 0
-    enq  = 0
-    deq  = 0
-}
-
-{
-    if ($1 == "d") {
-        drop++
-        printf("Dropped: %s\t%s\n", $5, $11)
-    }
-    if ($1 == "r") {
-        rec++
-        printf("Received: %s\t%s\n", $5, $11)
-    }
-    if ($1 == "+") {
-        enq++
-        printf("Enqueued: %s\t%s\n", $5, $11)
-    }
-    if ($1 == "-") {
-        deq++
-        printf("Dequeued: %s\t%s\n", $5, $11)
-    }
-}
-
-END {
-    printf("The number of packets dropped is %d\n", drop)
-    printf("The number of packets received is %d\n", rec)
-    printf("The number of packets enqueued is %d\n", enq)
-    printf("The number of packets dequeued is %d\n", deq)
-}
