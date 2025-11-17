@@ -1,0 +1,89 @@
+import java.io.*;
+import java.net.*;
+public class Server{
+    public static void main(String[] args){
+        ServerSocket serverSocket=null;
+        Socket clientSocket=null;
+        try{
+            serverSocket=new ServerSocket(9876);
+            System.out.println("Server started. waiting for a client...");
+            clientSocket = serverSocket.accept();
+            System.out.println("Client connected.");
+
+            BufferedReader inFormClient=new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            PrintWriter outToClient = new PrintWriter(clientSocket.getOutputStream(),true);
+
+            String fileName=inFormClient.readLine();
+            System.out.println("Client requested file:"+fileName);
+
+            File file=new File(fileName);
+            if(file.exists() && !file.isDirectory()){
+                BufferedReader fileReader=new BufferedReader(new FileReader(file));
+                String line;
+                outToClient.println("FILE_FOUND");
+                while((line =fileReader.readLine())!=null){
+                    outToClient.println(line);
+                }
+                fileReader.close();
+                System.out.println("File sent successfully.");
+
+            }else{
+                outToClient.println("FILE_NOT_FOUND");
+                System.out.println("Requested file not found.");
+            }
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }finally {
+            try{
+                if(clientSocket)
+            }
+        }
+    }
+}
+
+client:
+import java.io.*;
+import java.net.*;
+public class Client {
+    public static void main(String[] args) {
+        Socket socket = null;
+        try {
+            socket = new Socket("localhost", 9876);
+            System.out.println("Connected to the server!");
+
+            BufferedReader inFromServer = new BufferedReader(new
+
+                    InputStreamReader(socket.getInputStream()));
+            PrintWriter outToServer = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader userInput = new BufferedReader(new
+                    InputStreamReader(System.in));
+
+            System.out.print("Enter the name of the file to request: ");
+            String fileName = userInput.readLine();
+
+            outToServer.println(fileName);
+
+
+            String serverResponse = inFromServer.readLine();
+            if ("FILE_FOUND".equals(serverResponse)) {
+                System.out.println("File found! Receiving content:");
+                String line;
+                while ((line = inFromServer.readLine()) != null) {
+                    System.out.println(line);
+                }
+            } else if ("FILE_NOT_FOUND".equals(serverResponse)) {
+                System.out.println("File not found on the server.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+
+            try {
+                if (socket != null) socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
