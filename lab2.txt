@@ -68,3 +68,38 @@ for {set i 1} {$i <= 10} {incr i} {
 $ns at 2.0 "finish"
 
 $ns run
+
+
+awk:
+BEGIN {
+    drop = 0
+    rec  = 0
+    enq  = 0
+    deq  = 0
+}
+
+{
+    if ($1 == "d") {
+        drop++
+        printf("Dropped: %s\t%s\n", $5, $11)
+    }
+    if ($1 == "r") {
+        rec++
+        printf("Received: %s\t%s\n", $5, $11)
+    }
+    if ($1 == "+") {
+        enq++
+        printf("Enqueued: %s\t%s\n", $5, $11)
+    }
+    if ($1 == "-") {
+        deq++
+        printf("Dequeued: %s\t%s\n", $5, $11)
+    }
+}
+
+END {
+    printf("The number of packets dropped is %d\n", drop)
+    printf("The number of packets received is %d\n", rec)
+    printf("The number of packets enqueued is %d\n", enq)
+    printf("The number of packets dequeued is %d\n", deq)
+}
